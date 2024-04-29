@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import sklearn
 from scipy.sparse import csr_matrix
 
@@ -8,9 +9,46 @@ books = pd.read_csv("BX-Books.csv")
 users = pd.read_csv("BX-Users.csv")
 ratings = pd.read_csv("BX-Ratings.csv")
 
-"""
-Data pre-processing should happen here
-"""
+# Data imputation: filling in missing data/incorrect data?
+
+# Data manipulation: replacing the incorrectly matched countries with the provided state
+
+# Discretizing: grouping year of publishing and age into categories
+
+# Remove outliers and abnormal data
+
+# If ratings are 0-10 ensure there’s no ratings > 10 or < 0
+
+# Preprocess users and age data
+# Check column types
+print(users.dtypes)
+# Count original rows
+print("Original user rows: ", users.shape[0])
+# Remove all NaN or empty user ages
+users.dropna(subset=['User-Age'], inplace=True)
+print("User rows without null or NaN: ", users.shape[0])
+# Remove trailing spaces
+users['User-Age'] = users['User-Age'].str.strip()
+# Remove all non-numeric symbols
+users['User-Age'].replace(to_replace='[^0-9]+', value='', inplace=True, regex=True)
+# Convert the values to numeric
+users['User-Age'] = pd.to_numeric(users['User-Age'])
+print(users.dtypes)
+# Only retain users above 18 years of age.
+users = users[users['User-Age'] >= 18]
+print("User rows without users under 18: ", users.shape[0])
+# Only retain users below 116 years of age.
+users = users[users['User-Age'] < 116]
+print("User rows without users over 115: ", users.shape[0])
+# Use a box plot to determine the upper limit and remove outliers to ensure there’s no invalid age data.
+acceptableAgeRange = pd.DataFrame({'User Ages': users['User-Age']})
+# Draw a plot consisting of two boxplots.
+boxplotFigure = plt.figure()
+acceptableAgeRange.boxplot()
+plt.title("User Ages")
+boxplotFigure.savefig("user_ages.png", format="png")
+
+
 
 # get the number of ratings, unique books, and unique users
 number_of_books = len(ratings['ISBN'].unique())
