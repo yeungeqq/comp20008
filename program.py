@@ -125,8 +125,8 @@ number_of_ratings = len(ratings)
 # fuction to create user-item matrix
 def create_matrix(number_of_books, number_of_users, ratings):
     # get the unique value of book ISBN and user id
-    book_index = ratings['ISBN'].unique()
-    user_index = ratings['User-ID'].unique()
+    book_index = [i for i in ratings['ISBN']]
+    user_index = [i for i in ratings['User-ID']]
     # create and return the user-item matrix
     matrix = csr_matrix((ratings["Book-Rating"], (book_index, user_index)), shape=(number_of_books, number_of_users))
     return matrix
