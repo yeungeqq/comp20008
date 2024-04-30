@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import sklearn
+import requests
 from scipy.sparse import csr_matrix
 
 # read files and store in pandas dataframe
@@ -11,6 +12,33 @@ ratings = pd.read_csv("BX-Ratings.csv")
 """
 Data pre-processing should happen here
 """
+# data scaling: remove users with age below 18 years and above 100 years
+users['User-Age'] = users['User-Age'].str.extract('(\d+)', expand=False)
+users['User-Age'] = pd.to_numeric(users['User-Age'], errors='coerce')
+users.dropna(subset=['User-Age'], inplace=True)
+users = users[(users['User-Age'] >= 18) & (users['User-Age'] <= 100)]
+
+# function to get published year from ISBN provided
+def get_published_year(isbn):
+    url = "https://www.googleapis.com/books/v1/volumes?q=isbn:8845229041&key=AIzaSyDpbLUFFLUn10GEf7LVc6OkevdIk1INHIE"
+    page = requests.get(url)
+    data = page.json()
+
+    try:
+        published_year = data['items'][0]['volumeInfo']['publishedDate']
+        return int(published_year)
+    except (KeyError, IndexError):
+        return None
+
+# data enrichment: filling in missing year of publication
+books['Year-Of-Publication'] = books['Year-Of-Publication'].astype(int)
+for index, row in books.iterrows():
+    year = int(row['Year-Of-Publication'])
+    isbn = row['ISBN']
+    if year == 0:
+        missing_year = get_published_year(isbn)
+        if missing_year:
+            books.at[index, 'Year-Of-Publication'] = int(missing_year)
 
 # get the number of ratings, unique books, and unique users
 number_of_books = len(ratings['ISBN'].unique())
