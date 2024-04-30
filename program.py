@@ -112,6 +112,14 @@ plt.show()
 plt.savefig("graphs/frequency-of-scores.png")
 
 
+# Preprocess books
+# Count original rows
+print("Original book rows: ", books.shape[0])
+# Remove empty publishing years
+books.dropna(subset=['Year-Of-Publication'], inplace=True)
+print("Book rows without empty years: ", books.shape[0])
+# Check that the years are within a valid range
+
 
 # get the number of ratings, unique books, and unique users
 number_of_books = len(ratings['ISBN'].unique())
