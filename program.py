@@ -47,6 +47,73 @@ boxplotFigure = plt.figure()
 acceptableAgeRange.boxplot()
 plt.title("User Ages")
 boxplotFigure.savefig("user_ages.png", format="png")
+plt.clf()
+
+# Discretize the users into bins
+# Domain knowledge bins - by generation (see notes.md)
+bins=[18, 28, 44, 60, 70, 79, 97, 103]
+
+plt.hist(users['User-Age'], bins=bins)
+# plt.hist(pd.cut(users['User-Age'], bins, labels=["gen-z", "millennials", "gen x", "Boomers II", "Boomers I", "Post War", "WWII"]))
+plt.xlabel("Generation")
+plt.ylabel("Quantity")
+plt.title("Users per generation")
+plt.show()
+plt.savefig("users-per-generation.png")
+plt.clf()
+
+# Discretize the users into bins
+# Equal-width bins - by decade
+plt.hist(users['User-Age'], bins=8, range=(18,108))
+plt.xlabel("Decade")
+plt.ylabel("Quantity")
+plt.title("Users per decade")
+plt.show()
+plt.savefig("users-per-decade.png")
+plt.clf()
+
+# Discretize the users into bins
+# Equal-frequency bins
+plt.hist(users['User-Age'], bins=8, range=(18,108))
+plt.xlabel("?")
+plt.ylabel("Quantity")
+plt.title("Users per ?")
+plt.show()
+plt.savefig("users-per-frequency.png")
+plt.clf()
+
+
+# Preprocess book ratings
+# Check column types
+print(ratings.dtypes)
+# Count original rows
+print("Original rating rows: ", ratings.shape[0])
+# Remove all NaN or empty rows
+ratings.dropna(subset=['Book-Rating'], inplace=True)
+print("rating rows without null or NaN: ", ratings.shape[0])
+# Only retain ratings 1 or more.
+ratings = ratings[ratings['Book-Rating'] >= 1]
+print("rating rows greater than 0: ", ratings.shape[0])
+# Only retain ratings10 or less.
+ratings = ratings[ratings['Book-Rating'] <= 10]
+print("rating rows less than 11: ", ratings.shape[0])
+
+# Check if there is a valid ISBN for the rating
+uniqueISBNs = ratings['ISBN'].unique()
+
+validISBNs = pd.merge(books, ratings, on=['ISBN', 'ISBN'], how='inner')
+print(validISBNs.head(10))
+print(validISBNs.shape[0])
+# Can confirm that all rating ISBNs are valid
+
+# Draw a histogram.
+plt.hist(validISBNs['Book-Rating'], bins=10, range=(1,11))
+plt.xlabel("Score")
+plt.ylabel("Quantity")
+plt.title("Quantity of scores")
+plt.show()
+plt.savefig("frequency-of-scores.png")
+plt.clf()
 
 
 
