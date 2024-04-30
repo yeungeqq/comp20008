@@ -35,52 +35,48 @@ users['User-Age'].replace(to_replace='[^0-9]+', value='', inplace=True, regex=Tr
 users['User-Age'] = pd.to_numeric(users['User-Age'])
 print(users.dtypes)
 # Only retain users above 18 years of age.
-users = users[users['User-Age'] >= 18]
+users = users[users['User-Age'] >= 12]
 print("User rows without users under 18: ", users.shape[0])
 # Only retain users below 116 years of age.
-users = users[users['User-Age'] < 116]
-print("User rows without users over 115: ", users.shape[0])
+users = users[users['User-Age'] < 103]
+print("User rows without users over 103: ", users.shape[0])
 # Use a box plot to determine the upper limit and remove outliers to ensure there’s no invalid age data.
 acceptableAgeRange = pd.DataFrame({'User Ages': users['User-Age']})
-# Draw a plot consisting of two boxplots.
-boxplotFigure = plt.figure()
-acceptableAgeRange.boxplot()
+# Draw a plot
+plt.figure(1, clear=True)
+plt.boxplot(acceptableAgeRange)
+plt.ylabel("Age (years)")
 plt.title("User Ages")
-boxplotFigure.savefig("user_ages.png", format="png")
-plt.clf()
+plt.show()
+plt.savefig("graphs/user_ages.png", format="png")
+
 
 # Discretize the users into bins
 # Domain knowledge bins - by generation (see notes.md)
-bins=[18, 28, 44, 60, 70, 79, 97, 103]
+bins=[12, 16, 19, 28, 44, 60, 103]
 
+# plt.clf()
+plt.figure(2, clear=True)
 plt.hist(users['User-Age'], bins=bins)
 # plt.hist(pd.cut(users['User-Age'], bins, labels=["gen-z", "millennials", "gen x", "Boomers II", "Boomers I", "Post War", "WWII"]))
 plt.xlabel("Generation")
 plt.ylabel("Quantity")
 plt.title("Users per generation")
 plt.show()
-plt.savefig("users-per-generation.png")
-plt.clf()
+plt.savefig("graphs/users-per-generation.png")
+
 
 # Discretize the users into bins
 # Equal-width bins - by decade
-plt.hist(users['User-Age'], bins=8, range=(18,108))
+# plt.clf()
+plt.figure(3, clear=True)
+plt.hist(users['User-Age'], bins=10, range=(12,103))
 plt.xlabel("Decade")
 plt.ylabel("Quantity")
 plt.title("Users per decade")
 plt.show()
-plt.savefig("users-per-decade.png")
-plt.clf()
+plt.savefig("graphs/users-per-decade.png")
 
-# Discretize the users into bins
-# Equal-frequency bins
-plt.hist(users['User-Age'], bins=8, range=(18,108))
-plt.xlabel("?")
-plt.ylabel("Quantity")
-plt.title("Users per ?")
-plt.show()
-plt.savefig("users-per-frequency.png")
-plt.clf()
 
 
 # Preprocess book ratings
@@ -107,13 +103,13 @@ print(validISBNs.shape[0])
 # Can confirm that all rating ISBNs are valid
 
 # Draw a histogram.
+plt.figure(4, clear=True)
 plt.hist(validISBNs['Book-Rating'], bins=10, range=(1,11))
 plt.xlabel("Score")
 plt.ylabel("Quantity")
 plt.title("Quantity of scores")
 plt.show()
-plt.savefig("frequency-of-scores.png")
-plt.clf()
+plt.savefig("graphs/frequency-of-scores.png")
 
 
 
