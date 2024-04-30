@@ -9,116 +9,102 @@ books = pd.read_csv("BX-Books.csv")
 users = pd.read_csv("BX-Users.csv")
 ratings = pd.read_csv("BX-Ratings.csv")
 
-# Data imputation: filling in missing data/incorrect data?
+def preprocessUsers(users):
+    # Preprocess users and age data
+    # Remove all NaN or empty user ages
+    users.dropna(subset=['User-Age'], inplace=True)
+    # Remove trailing spaces
+    users['User-Age'] = users['User-Age'].str.strip()
+    # Remove all non-numeric symbols
+    users['User-Age'].replace(to_replace='[^0-9]+', value='', inplace=True, regex=True)
+    # Convert the values to numeric
+    users['User-Age'] = pd.to_numeric(users['User-Age'])
+    # Remove outliers and abnormal data
+    # Only retain users above 12 years of age (lower end gen-z).
+    users = users[users['User-Age'] >= 12]
+    # Only retain users below 103 years of age (upper end boomers).
+    users = users[users['User-Age'] < 103]
+    return users
 
-# Data manipulation: replacing the incorrectly matched countries with the provided state
+def createAgeGraphs(users):
+    # Use a box plot to determine the upper limit and remove outliers to ensure there’s no invalid age data.
+    plt.figure(1, clear=True)
+    plt.boxplot(users['User-Age'])
+    plt.ylabel("Age (years)")
+    plt.title("User Ages")
+    plt.show()
+    plt.savefig("graphs/user_ages.png", format="png")
 
-# Discretizing: grouping year of publishing and age into categories
+    # Discretize the users into bins
+    # Domain knowledge bins - by generation (see notes.md)
+    discreteAges=[12, 16, 19, 28, 44, 60, 103]
 
-# Remove outliers and abnormal data
+    # plt.clf()
+    plt.figure(2, clear=True)
+    plt.hist(users['User-Age'], bins=discreteAges)
+    # plt.hist(pd.cut(users['User-Age'], bins, labels=["gen-z", "millennials", "gen x", "Boomers II", "Boomers I", "Post War", "WWII"]))
+    plt.xlabel("Generation")
+    plt.ylabel("Quantity")
+    plt.title("Users per generation")
+    plt.show()
+    plt.savefig("graphs/users-per-generation.png")
 
-# If ratings are 0-10 ensure there’s no ratings > 10 or < 0
+    # Discretize the users into bins
+    # Equal-width bins - by decade
+    # plt.clf()
+    plt.figure(3, clear=True)
+    plt.hist(users['User-Age'], bins=10, range=(12,103))
+    plt.xlabel("Decade")
+    plt.ylabel("Quantity")
+    plt.title("Users per decade")
+    plt.show()
+    plt.savefig("graphs/users-per-decade.png")
+    return
 
-# Preprocess users and age data
-# Check column types
-print(users.dtypes)
-# Count original rows
-print("Original user rows: ", users.shape[0])
-# Remove all NaN or empty user ages
-users.dropna(subset=['User-Age'], inplace=True)
-print("User rows without null or NaN: ", users.shape[0])
-# Remove trailing spaces
-users['User-Age'] = users['User-Age'].str.strip()
-# Remove all non-numeric symbols
-users['User-Age'].replace(to_replace='[^0-9]+', value='', inplace=True, regex=True)
-# Convert the values to numeric
-users['User-Age'] = pd.to_numeric(users['User-Age'])
-print(users.dtypes)
-# Only retain users above 18 years of age.
-users = users[users['User-Age'] >= 12]
-print("User rows without users under 18: ", users.shape[0])
-# Only retain users below 116 years of age.
-users = users[users['User-Age'] < 103]
-print("User rows without users over 103: ", users.shape[0])
-# Use a box plot to determine the upper limit and remove outliers to ensure there’s no invalid age data.
-acceptableAgeRange = pd.DataFrame({'User Ages': users['User-Age']})
-# Draw a plot
-plt.figure(1, clear=True)
-plt.boxplot(acceptableAgeRange)
-plt.ylabel("Age (years)")
-plt.title("User Ages")
-plt.show()
-plt.savefig("graphs/user_ages.png", format="png")
-
-
-# Discretize the users into bins
-# Domain knowledge bins - by generation (see notes.md)
-bins=[12, 16, 19, 28, 44, 60, 103]
-
-# plt.clf()
-plt.figure(2, clear=True)
-plt.hist(users['User-Age'], bins=bins)
-# plt.hist(pd.cut(users['User-Age'], bins, labels=["gen-z", "millennials", "gen x", "Boomers II", "Boomers I", "Post War", "WWII"]))
-plt.xlabel("Generation")
-plt.ylabel("Quantity")
-plt.title("Users per generation")
-plt.show()
-plt.savefig("graphs/users-per-generation.png")
-
-
-# Discretize the users into bins
-# Equal-width bins - by decade
-# plt.clf()
-plt.figure(3, clear=True)
-plt.hist(users['User-Age'], bins=10, range=(12,103))
-plt.xlabel("Decade")
-plt.ylabel("Quantity")
-plt.title("Users per decade")
-plt.show()
-plt.savefig("graphs/users-per-decade.png")
-
-
+users = preprocessUsers(users)
+createAgeGraphs(users)
 
 # Preprocess book ratings
-# Check column types
-print(ratings.dtypes)
-# Count original rows
-print("Original rating rows: ", ratings.shape[0])
-# Remove all NaN or empty rows
-ratings.dropna(subset=['Book-Rating'], inplace=True)
-print("rating rows without null or NaN: ", ratings.shape[0])
-# Only retain ratings 1 or more.
-ratings = ratings[ratings['Book-Rating'] >= 1]
-print("rating rows greater than 0: ", ratings.shape[0])
-# Only retain ratings10 or less.
-ratings = ratings[ratings['Book-Rating'] <= 10]
-print("rating rows less than 11: ", ratings.shape[0])
+def preprocessRatings(ratings):
 
-# Check if there is a valid ISBN for the rating
-uniqueISBNs = ratings['ISBN'].unique()
+    # Check column types
+    ## print(ratings.dtypes)
+    # Remove all NaN or empty rows
+    ratings.dropna(subset=['Book-Rating'], inplace=True)
+    # Only retain ratings 1 or more.
+    ratings = ratings[ratings['Book-Rating'] >= 1]
+    # Only retain ratings10 or less.
+    ratings = ratings[ratings['Book-Rating'] <= 10]
 
-validISBNs = pd.merge(books, ratings, on=['ISBN', 'ISBN'], how='inner')
-print(validISBNs.head(10))
-print(validISBNs.shape[0])
-# Can confirm that all rating ISBNs are valid
+    # Check if there is a valid ISBN for the rating
+    uniqueISBNs = ratings['ISBN'].unique()
 
-# Draw a histogram.
-plt.figure(4, clear=True)
-plt.hist(validISBNs['Book-Rating'], bins=10, range=(1,11))
-plt.xlabel("Score")
-plt.ylabel("Quantity")
-plt.title("Quantity of scores")
-plt.show()
-plt.savefig("graphs/frequency-of-scores.png")
+    ratings = pd.merge(books, ratings, on=['ISBN', 'ISBN'], how='inner')
+    # Can confirm that all rating ISBNs are valid (have a matching book in the book list)
+    return ratings
 
+def createRatingsGraphs(ratings):
+    # Draw a histogram of rating scores
+    plt.figure(4, clear=True)
+    plt.hist(ratings['Book-Rating'], bins=10, range=(1,11))
+    plt.xlabel("Score")
+    plt.ylabel("Quantity")
+    plt.title("Quantity of scores")
+    plt.show()
+    plt.savefig("graphs/frequency-of-scores.png")
+    return
 
-# Preprocess books
-# Count original rows
-print("Original book rows: ", books.shape[0])
-# Remove empty publishing years
-books.dropna(subset=['Year-Of-Publication'], inplace=True)
-print("Book rows without empty years: ", books.shape[0])
-# Check that the years are within a valid range
+ratings = preprocessRatings(ratings)
+createRatingsGraphs(ratings)
+
+def preprocessBooks(books):
+    # Preprocess books
+    # Remove empty publishing years
+    books.dropna(subset=['Year-Of-Publication'], inplace=True)
+    # Check that the years are within a valid range
+    return books
+
+books = preprocessBooks(books)
 
 
 # get the number of ratings, unique books, and unique users
