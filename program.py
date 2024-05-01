@@ -76,11 +76,9 @@ def preprocessRatings(ratings):
     # Only retain ratings10 or less.
     ratings = ratings[ratings['Book-Rating'] <= 10]
 
-    # Check if there is a valid ISBN for the rating
-    uniqueISBNs = ratings['ISBN'].unique()
+    # Confirm that all rating ISBNs are valid (have a matching book in the book list)
+    ratings = pd.merge(books['ISBN'], ratings, on='ISBN', how='inner')
 
-    ratings = pd.merge(books, ratings, on=['ISBN', 'ISBN'], how='inner')
-    # Can confirm that all rating ISBNs are valid (have a matching book in the book list)
     return ratings
 
 def createRatingsGraphs(ratings):
