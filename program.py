@@ -22,13 +22,10 @@ def preprocessUsers(users):
     users['User-Age'] = users['User-Age'].str.strip()
     # Remove all non-numeric symbols
     users['User-Age'].replace(to_replace='[^0-9]+', value='', inplace=True, regex=True)
-    # Alternatively
-    # users['User-Age'] = users['User-Age'].str.extract('(\d+)', expand=False)
+    # Alternatively : users['User-Age'] = users['User-Age'].str.extract('(\d+)', expand=False)
     # Convert the values to numeric
     users['User-Age'] = pd.to_numeric(users['User-Age'])
-    # Remove outliers and abnormal data
-    # Data scaling: remove users with age below 18 years and above 100 years
-    # Only retain users above 12 years of age (lower end gen-z) and below 103 years of age (upper end boomers+).
+    # Data scaling: only retain users above 12 (lower end gen-z) and below 103 (upper end boomers+) years of age.
     users = users[(users['User-Age'] >= 12) & (users['User-Age'] < 103)]
     return users
 
