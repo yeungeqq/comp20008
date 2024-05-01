@@ -105,6 +105,38 @@ def preprocessBooks(books):
 books = preprocessBooks(books)
 
 
+# Create a dataframe that is connected on user id and book ISBN which has
+# - the users age
+# - the books publishing year
+# - the rating
+
+pd.set_option('display.max_columns', None)
+
+# booksCondensed = books['ISBN', 'Year-Of-Publication']
+booksCondensed = pd.DataFrame({'ISBN': books['ISBN'], 'Year-Of-Publication': books['Year-Of-Publication']})
+bookJoin = pd.merge(booksCondensed, ratings, on=['ISBN', 'ISBN'], how='inner')
+usersCondensed = pd.DataFrame({'User-ID': users['User-ID'], 'User-Age':  users['User-Age']})
+dataJoined = pd.merge(usersCondensed, bookJoin, on=['User-ID', 'User-ID'], how='inner')
+
+# 3D scatterplot 
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+ax.scatter(dataJoined['User-Age'], dataJoined['Year-Of-Publication'], dataJoined['Book-Rating'])
+
+ax.set_xlabel('User Age')
+ax.set_ylabel('Year of publication')
+ax.set_zlabel('Rating')
+
+plt.show()
+
+# Scatter plot with histograms
+# https://matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_hist.html#sphx-glr-gallery-lines-bars-and-markers-scatter-hist-py
+
+# Other graph solutions 
+# https://python-graph-gallery.com/134-how-to-avoid-overplotting-with-python/
+
+
+
 # get the number of ratings, unique books, and unique users
 number_of_books = len(ratings['ISBN'].unique())
 number_of_users = len(ratings['User-ID'].unique())
