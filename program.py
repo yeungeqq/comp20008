@@ -250,6 +250,8 @@ allData = pd.merge(users, booksAndRatings, on=['User-ID', 'User-ID'], how='inner
 # Rows: a rating (given by a single user for a single book)
 print(allData.tail(10))
 
+allData.to_csv('datasets/combinedData.csv', index=False)
+
 
 """
 Discretize the age, publication year and ratings
