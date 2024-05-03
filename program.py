@@ -129,6 +129,8 @@ def preprocessBooks(books):
             missing_year = get_published_year(isbn)
             if missing_year:
                 books.at[index, 'Year-Of-Publication'] = int(missing_year)
+    # Remove any remaining books published in the zero year 
+    books = books[(books['Year-Of-Publication'] > 0)]
     return books
 
 books = preprocessBooks(books)
