@@ -149,23 +149,47 @@ bookJoin = pd.merge(booksCondensed, ratings, on=['ISBN', 'ISBN'], how='inner')
 usersCondensed = pd.DataFrame({'User-ID': users['User-ID'], 'User-Age':  users['User-Age']})
 dataJoined = pd.merge(usersCondensed, bookJoin, on=['User-ID', 'User-ID'], how='inner')
 
-# 3D scatterplot
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
-ax.scatter(dataJoined['User-Age'], dataJoined['Year-Of-Publication'], dataJoined['Book-Rating'])
+print(dataJoined.head(10))
 
-ax.set_xlabel('User Age')
-ax.set_ylabel('Year of publication')
-ax.set_zlabel('Rating')
 
-plt.show()
+"""
+Draw a 3D scatter plot
+"""
+def draw_3D_scatterplot(title, xLabel, x, yLabel, y, zLabel, z, zValueColours):
+    colours = [zValueColours[val] for val in z]
+    
+    labels = list(zValueColours.keys())
+    print(labels)
 
-# Scatter plot with histograms
-# https://matplotlib.org/stable/gallery/lines_bars_and_markers/scatter_hist.html#sphx-glr-gallery-lines-bars-and-markers-scatter-hist-py
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    scatter = ax.scatter(x, y, z, marker='o', c=colours, s=1, alpha=0.5)
 
-# Other graph solutions
-# https://python-graph-gallery.com/134-how-to-avoid-overplotting-with-python/
+    ax.set_xlabel(xLabel)
+    ax.set_ylabel(yLabel)
+    ax.set_zlabel(zLabel)
 
+    legend1 = ax.legend(*scatter.legend_elements(), loc="lower left", title="legend")
+    ax.add_artist(legend1)
+
+    plt.show()
+
+
+# create a 3D scatterplot 
+zValueColours = {
+    1: [1, 0, 0, 0.5],    # Red
+    2: [1, 0.5, 0, 0.5],  # Orange
+    3: [1, 1, 0, 0.5],    # Yellow
+    4: [0.5, 1, 0, 0.5],  # Lime
+    5: [0, 1, 0, 0.5],    # Green
+    6: [0, 1, 1, 0.5],    # Cyan
+    7: [0, 0.5, 1, 0.5],  # Sky Blue
+    8: [0, 0, 1, 0.5],    # Deep Blue
+    9: [0.5, 0, 1, 0.5],  # Purple
+    10: [1, 0, 1, 0.5],    # Magenta
+}
+
+draw_3D_scatterplot("Scatterplot 1", 'User Age', dataJoined['User-Age'], 'Year of publication', dataJoined['Year-Of-Publication'], 'Rating', dataJoined['Book-Rating'], zValueColours)
 
 
 # get the number of ratings, unique books, and unique users
