@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import sklearn
 import requests
 from scipy.sparse import csr_matrix
+import re
 
 # read files and store in pandas dataframe
 books = pd.read_csv("BX-Books.csv")
@@ -100,13 +101,17 @@ createRatingsGraphs(ratings)
 
 # function to get published year from ISBN provided
 def get_published_year(isbn):
-    url = "https://www.googleapis.com/books/v1/volumes?q=isbn:8845229041&key=AIzaSyDpbLUFFLUn10GEf7LVc6OkevdIk1INHIE"
+    url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn + "&key=AIzaSyDpbLUFFLUn10GEf7LVc6OkevdIk1INHIE"
     page = requests.get(url)
     data = page.json()
 
     try:
         published_year = data['items'][0]['volumeInfo']['publishedDate']
-        return int(published_year)
+        # The publishedDate is not always a year, it occassionally has the month and the month and day
+        # eg: 1994-01 or 1984-01-04
+        # Need to sanitise the date to be only a year inorder to convert it to an int 
+        published_year_sanitised = re.search(r'\d+', published_year).group()
+        return int(published_year_sanitised)
     except (KeyError, IndexError):
         return None
 
