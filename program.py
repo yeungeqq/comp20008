@@ -139,11 +139,12 @@ def preprocessBooks(books):
 
 books = preprocessBooks(books)
 
-
-# Create a dataframe that is connected on user id and book ISBN which has
-# - the users age
-# - the books publishing year
-# - the rating
+"""
+Create a dataframe that is connected on user id and book ISBN which has
+- the users age
+- the books publishing year
+- the rating
+"""
 
 pd.set_option('display.max_columns', None)
 
