@@ -3,9 +3,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import sklearn
+from sklearn.model_selection import train_test_split
 import requests
 from scipy.sparse import csr_matrix
 import re
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
 
 # read files and store in pandas dataframe
 books = pd.read_csv("BX-Books.csv")
@@ -291,3 +294,18 @@ zValueColours = {
 }
 
 draw_3D_scatterplot("Scatterplot 1", 'User Generation', discretizedData['User-Generation'], 'Decade of publication', discretizedData['Decade-Of-Publication'], 'Rating', discretizedData['Book-Rating-Tier'], zValueColours)
+
+
+"""
+Classification
+Given a collection of records (training set), each record contains a set of attributes, one class label.
+Find a predictive model for class label as a function of the values of other attributes.
+"""
+
+# Separate the data into train and test set
+# train set size 80%, test set size 20%
+train, test = train_test_split(discretizedData, test_size=0.2, random_state=42, shuffle=True)
+
+# save the train and test file
+train.to_csv('datasets/train.csv', index=False)
+test.to_csv('datasets/text.csv', index=False)
