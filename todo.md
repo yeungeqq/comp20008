@@ -12,3 +12,9 @@ italia"': 102, vs italy"': 17
 
 ensure they're also real countries 
 universe"': 93
+
+
+## Preprocess publishers 
+"Union gÃ\x83Â©nÃ\x83Â©rale d'Ã\x83Â©ditions": 561, 
+'KrÃ\x83?Ã\x82Â¼ger, Frankfurt': 514,
+'Unknown Publisher - Being Researched': 1143,
