@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -232,3 +233,61 @@ book_titles = dict(zip(books['ISBN'], books['Book-Title']))
 print("Here is the suggested books for you:\n")
 for i in similar_books:
     print(book_titles[i])
+
+
+
+
+"""
+Create a dataframe containing all attributes
+"""
+booksAndRatings = pd.merge(books, ratings, on=['ISBN', 'ISBN'], how='inner')
+allData = pd.merge(users, booksAndRatings, on=['User-ID', 'User-ID'], how='inner')
+# Columns: 'User-ID', 'User-City', 'User-State', 'User-Country', 'User-Age', 'ISB', 'Book-Title', 'Book-Author', 'Year-Of-Publication', 'Book-Publisher', 'Book-Rating',
+# Rows: a rating (given by a single user for a single book)
+print(allData.tail(10))
+
+
+"""
+Discretize the age, publication year and ratings
+"""
+discretizedData = allData
+
+# Discretise ratings into bins
+ratingBins = [0, 4, 7, 10]
+discretizedData['Book-Rating'] = pd.cut(discretizedData['Book-Rating'], ratingBins, labels=["poor", "okay", "good"])
+discretizedData = discretizedData.rename(columns={"Book-Rating": "Book-Rating-Tier"})
+
+# Create bins by decade for the book's year of publication
+floorMinYear = int(math.floor(discretizedData['Year-Of-Publication'].min() / 10.0)) * 10
+ceilMaxYear = int(math.ceil(discretizedData['Year-Of-Publication'].max() / 10.0)) * 10
+yearsRange = ceilMaxYear - floorMinYear
+numberOfDecades = round(yearsRange / 10)
+yearBins = list(range(floorMinYear, ceilMaxYear + 1, 10))
+# Discretize the years of publications into equal-width bins by decade
+discretizedData['Year-Of-Publication'] = pd.cut(discretizedData['Year-Of-Publication'], yearBins, labels=yearBins[:-1])
+discretizedData = discretizedData.rename(columns={"Year-Of-Publication": "Decade-Of-Publication"})
+
+# Discretize the users into bins
+# Domain knowledge bins - by generation (see notes.md)
+discreteAges={
+  "teenager": 12,
+  "youth": 16,
+  "genz": 19,
+  "millenial": 28,
+  "genx": 44,
+  "boomer+": 60,
+  "twilight": 103,
+}
+discreteAgeLabels = list(discreteAges.keys())
+discreteAgeValues = list(discreteAges.values())
+discretizedData['User-Age'] = pd.cut(discretizedData['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1])
+discretizedData = discretizedData.rename(columns={"User-Age": "User-Generation"})
+
+# Create a 3D scatterplot
+zValueColours = {
+    "poor": [1, 0, 0, 0.5],
+    "okay": [1, 1, 0, 0.5],
+    "good": [0, 1, 0, 0.5],
+}
+
+draw_3D_scatterplot("Scatterplot 1", 'User Generation', discretizedData['User-Generation'], 'Decade of publication', discretizedData['Decade-Of-Publication'], 'Rating', discretizedData['Book-Rating-Tier'], zValueColours)
