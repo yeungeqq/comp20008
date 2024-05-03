@@ -15,9 +15,9 @@ ratings = pd.read_csv("BX-Ratings.csv")
 """
 Data pre-processing
 """
-
 def preprocessUsers(users):
     # Preprocess users and age data
+    users.dropna(subset=['User-Country'], inplace=True)
     # Remove all NaN or empty user ages
     users.dropna(subset=['User-Age'], inplace=True)
     # Remove trailing spaces
