@@ -1,6 +1,7 @@
 import math
 import pandas as pd
 import matplotlib.pyplot as plt
+from variables import countries
 
 # read files and store in pandas dataframe
 books = pd.read_csv("BX-Books.csv")
@@ -10,6 +11,38 @@ ratings = pd.read_csv("BX-Ratings.csv")
 """
 Data pre-processing
 """
+
+def preprocessUserCountries(users):
+    # Remove the """
+    users['User-Country'] = users['User-Country'].str.strip()
+    users['User-Country'].replace(to_replace='["]+', value='', inplace=True, regex=True)
+    users['User-Country'] = users['User-Country'].str.strip()
+
+    # Create a mapping dictionary
+    country_mapping = {}
+    for country in countries:
+        # Determine the final 'map_to' target country name if 'map_to' exists
+        final_country_name = country["country"]
+        if "map_to" in country:
+            # Find the target country entry that matches the 'map_to' value
+            target_country = next((item for item in countries if item["country"] == country["map_to"]), None)
+            if target_country:
+                final_country_name = target_country["country"]
+
+    # All the provided data is in lowercase
+    for country in countries:
+        country_mapping[country["country"].lower()] = country["country"]
+        country_mapping[country["full_name"].lower()] = country["country"]
+        country_mapping[country["iso_code_2"].lower()] = country["country"]
+        country_mapping[country["iso_code_3"].lower()] = country["country"]
+
+    # Normalize the 'User-country' entries (this will leave the original value if there's a value that doesn't match)
+    users['User-Country'] = users['User-Country'].str.lower().map(country_mapping).fillna(users['User-Country'])
+    
+
+    # Note this does not elimiate invalid countries
+    
+
 def preprocessUsers(users):
     print("preprocessUsers")
     # Preprocess users and age data
