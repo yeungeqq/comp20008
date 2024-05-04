@@ -5,6 +5,11 @@ from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 
 # read files and store in pandas dataframe
+books = pd.read_csv("BX-Books.csv")
+users = pd.read_csv("BX-Users.csv")
+ratings = pd.read_csv("BX-Ratings.csv")
+
+# read files and store in pandas dataframe
 allData = pd.read_csv("datasets/combinedData.csv")
 discretizedData = pd.read_csv("datasets/discretizedData.csv")
 

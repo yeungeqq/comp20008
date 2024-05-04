@@ -40,14 +40,14 @@ def preprocessUserCountries(users):
     users['User-Country'] = users['User-Country'].str.lower().map(country_mapping)
     
     # Optionally remove invalid (na) countries - eliminates 795 rows (48299 to 47504)
-    users.dropna(subset=['User-Country'], inplace=True)
+    ### users.dropna(subset=['User-Country'], inplace=True)
     
 
 def preprocessUsers(users):
     print("preprocessUsers")
     # Preprocess users and age data
     # Remove all NaN or empty user ages
-    users.dropna(subset=['User-Age'], inplace=True)
+    ### users.dropna(subset=['User-Age'], inplace=True)
     # Remove trailing spaces
     users['User-Age'] = users['User-Age'].str.strip()
     # Remove all non-numeric symbols
@@ -96,8 +96,8 @@ def createAgeGraphs(users):
     return
 
 users = preprocessUsers(users)
-createAgeGraphs(users)
-print("users.to_csv")
+# createAgeGraphs(users)
+# print("users.to_csv")
 users.to_csv('datasets/BX-Users-processed.csv', index=False)
 
 # Preprocess book ratings
@@ -131,15 +131,15 @@ def createRatingsGraphs(ratings):
     return
 
 ratings = preprocessRatings(ratings)
-createRatingsGraphs(ratings)
+# createRatingsGraphs(ratings)
 print("ratings.to_csv")
 ratings.to_csv('datasets/BX-Ratings-processed.csv', index=False)
 
 def groupYears(books):
     print("groupYears")
     # Group year of publication of books into 20-year periods
-    bins = [1940, 1959, 1979, 1999, 2024]
-    labels = ['1940-1959', '1960-1979', '1980-1999', '2000-2024']
+    bins = [1919, 1998, 2010]
+    labels = ['1920-1998', '1999-2010']
     books['Publication-Era'] = pd.cut(books['Year-Of-Publication'], bins=bins, labels=labels, right=True)
     return books
 
@@ -157,20 +157,36 @@ def preprocessBooks(books):
     return books
 
 books = preprocessBooks(books)
-print("books.to_csv")
+# print("books.to_csv")
 books.to_csv('datasets/BX-Books-processed.csv', index=False)
-print(books)
+# print(books)
 
 """
 Create a dataframe containing all attributes
 """
-booksAndRatings = pd.merge(books, ratings, on=['ISBN', 'ISBN'], how='inner')
+booksAndRatings = pd.merge(ratings, books, on=['ISBN'], how='inner')
+booksAndRatings_ = booksAndRatings.groupby(['User-ID', 'Publication-Era'])['Book-Rating'].mean().reset_index()
+books_ratings_users = pd.merge(booksAndRatings_[['User-ID', 'Book-Rating', 'Publication-Era']], users,
+                               on='User-ID', how='inner')
+
+### added by eq
+matrix = books_ratings_users[['User-ID', 'User-City', 'User-State', 'User-Country', 'User-Age']].drop_duplicates()
+
+old_book = books_ratings_users[books_ratings_users['Publication-Era']=='1920-1998'][['User-ID', 'Book-Rating']]
+old_book = old_book.rename(columns={'Book-Rating': 'Old-Book-Rating'})
+new_book = books_ratings_users[books_ratings_users['Publication-Era']=='1999-2010'][['User-ID', 'Book-Rating']]
+new_book = new_book.rename(columns={'Book-Rating': 'New-Book-Rating'})
+
+matrix = pd.merge(matrix, old_book, on='User-ID', how='inner')
+matrix = pd.merge(matrix, new_book, on='User-ID', how='inner')
+### added by eq
+
 allData = pd.merge(users, booksAndRatings, on=['User-ID', 'User-ID'], how='inner')
 # Columns: 'User-ID', 'User-City', 'User-State', 'User-Country', 'User-Age', 'ISB', 'Book-Title', 'Book-Author', 'Year-Of-Publication', 'Book-Publisher', 'Book-Rating',
 # Rows: a rating (given by a single user for a single book)
-print(allData.tail(10))
+# print(allData.tail(10))
 
-print("allData.to_csv")
+# print("allData.to_csv")
 allData.to_csv('datasets/combinedData.csv', index=False)
 
 
@@ -209,6 +225,14 @@ discreteAgeLabels = list(discreteAges.keys())
 discreteAgeValues = list(discreteAges.values())
 discretizedData['User-Age'] = pd.cut(discretizedData['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1])
 discretizedData = discretizedData.rename(columns={"User-Age": "User-Generation"})
+
+### added by eq
+matrix['User-Age'] = pd.cut(matrix['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1])
+matrix = matrix.rename(columns={"User-Age": "User-Generation"})
+matrix.to_csv('datasets/matrix.csv')
+### added by eq
+
+# print(books_ratings_users.head(20))
 
 # Create a 3D scatterplot
 zValueColours = {
