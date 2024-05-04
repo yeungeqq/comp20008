@@ -41,10 +41,12 @@ def preprocessUserCountries(users):
     
     # Optionally remove invalid (na) countries - eliminates 795 rows (48299 to 47504)
     users.dropna(subset=['User-Country'], inplace=True)
+    return users
     
 
 def preprocessUsers(users):
     print("preprocessUsers")
+    users = preprocessUserCountries(users)
     # Preprocess users and age data
     # Remove all NaN or empty user ages
     users.dropna(subset=['User-Age'], inplace=True)
