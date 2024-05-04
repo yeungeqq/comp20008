@@ -252,12 +252,10 @@ discretizedData = discretizedData.rename(columns={"Book-Rating": "Book-Rating-Ti
 # Create bins by decade for the book's year of publication
 floorMinYear = int(math.floor(discretizedData['Year-Of-Publication'].min() / 10.0)) * 10
 ceilMaxYear = int(math.ceil(discretizedData['Year-Of-Publication'].max() / 10.0)) * 10
-yearsRange = ceilMaxYear - floorMinYear
-numberOfDecades = round(yearsRange / 10)
-yearBins = list(range(floorMinYear, ceilMaxYear + 1, 10))
+yearBins = [floorMinYear, 2000, ceilMaxYear]
 # Discretize the years of publications into equal-width bins by decade
 discretizedData['Year-Of-Publication'] = pd.cut(discretizedData['Year-Of-Publication'], yearBins, labels=yearBins[:-1])
-discretizedData = discretizedData.rename(columns={"Year-Of-Publication": "Decade-Of-Publication"})
+discretizedData = discretizedData.rename(columns={"Year-Of-Publication": "Publication-Era"})
 
 # Discretize the users into bins
 # Domain knowledge bins - by generation (see notes.md)
@@ -282,7 +280,7 @@ zValueColours = {
     "good": [0, 1, 0, 0.5],
 }
 
-draw_3D_scatterplot("Scatterplot 1", 'User Generation', discretizedData['User-Generation'], 'Decade of publication', discretizedData['Decade-Of-Publication'], 'Rating', discretizedData['Book-Rating-Tier'], zValueColours)
+draw_3D_scatterplot("Scatterplot 1", 'User Generation', discretizedData['User-Generation'], 'Decade of publication', discretizedData['Publication-Era'], 'Rating', discretizedData['Book-Rating-Tier'], zValueColours)
 
 
 """
