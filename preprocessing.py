@@ -36,11 +36,11 @@ def preprocessUserCountries(users):
         country_mapping[country["iso_code_2"].lower()] = country["country"]
         country_mapping[country["iso_code_3"].lower()] = country["country"]
 
-    # Normalize the 'User-country' entries (this will leave the original value if there's a value that doesn't match)
-    users['User-Country'] = users['User-Country'].str.lower().map(country_mapping).fillna(users['User-Country'])
+    # Normalize the 'User-country' entries - invalid countries will be set to na
+    users['User-Country'] = users['User-Country'].str.lower().map(country_mapping)
     
-
-    # Note this does not elimiate invalid countries
+    # Optionally remove invalid (na) countries - eliminates 795 rows (48299 to 47504)
+    users.dropna(subset=['User-Country'], inplace=True)
     
 
 def preprocessUsers(users):
