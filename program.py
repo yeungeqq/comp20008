@@ -103,41 +103,27 @@ def createRatingsGraphs(ratings):
 ratings = preprocessRatings(ratings)
 createRatingsGraphs(ratings)
 
-# function to get published year from ISBN provided
-def get_published_year(isbn):
-    url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn + "&key=AIzaSyDpbLUFFLUn10GEf7LVc6OkevdIk1INHIE"
-    page = requests.get(url)
-    data = page.json()
+def groupYears(books):
+    # Group year of publication of books into 20-year periods
+    bins = [1940, 1959, 1979, 1999, 2024]
+    labels = ['1940-1959', '1960-1979', '1980-1999', '2000-2024']
+    books['Publication-Era'] = pd.cut(books['Year-Of-Publication'], bins=bins, labels=labels, right=True)
+    return books
 
-    try:
-        published_year = data['items'][0]['volumeInfo']['publishedDate']
-        # The publishedDate is not always a year, it occassionally has the month and the month and day
-        # eg: 1994-01 or 1984-01-04
-        # Need to sanitise the date to be only a year inorder to convert it to an int 
-        published_year_sanitised = re.search(r'\d+', published_year).group()
-        return int(published_year_sanitised)
-    except (KeyError, IndexError):
-        return None
-
+# Preprocess books
 def preprocessBooks(books):
-    # Preprocess books
     # Remove empty publishing years
     books.dropna(subset=['Year-Of-Publication'], inplace=True)
     # Check that the years are within a valid range
-    # data enrichment: filling in missing year of publication
     books['Year-Of-Publication'] = books['Year-Of-Publication'].astype(int)
-    for index, row in books.iterrows():
-        year = int(row['Year-Of-Publication'])
-        isbn = row['ISBN']
-        if year == 0:
-            missing_year = get_published_year(isbn)
-            if missing_year:
-                books.at[index, 'Year-Of-Publication'] = int(missing_year)
     # Remove any remaining books published in the zero year or published in the ~ future ~
-    books = books[(books['Year-Of-Publication'] > 0) & (books['Year-Of-Publication'] <= 2024) ]
+    books = books[(books['Year-Of-Publication'] > 0) & (books['Year-Of-Publication'] <= 2024)]
+    # Group the year of publication into 20-year period intervals
+    books = groupYears(books)
     return books
 
 books = preprocessBooks(books)
+print(books)
 
 """
 Create a dataframe that is connected on user id and book ISBN which has
