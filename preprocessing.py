@@ -168,6 +168,7 @@ books.to_csv('datasets/BX-Books-processed.csv', index=False)
 Create a dataframe containing all attributes
 """
 booksAndRatings = pd.merge(ratings, books, on=['ISBN'], how='inner')
+booksAndRatings.to_csv('datasets/books_rating.csv')
 booksAndRatings_ = booksAndRatings.groupby(['User-ID', 'Publication-Era'])['Book-Rating'].mean().reset_index()
 books_ratings_users = pd.merge(booksAndRatings_[['User-ID', 'Book-Rating', 'Publication-Era']], users,
                                on='User-ID', how='inner')
