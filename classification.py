@@ -1,4 +1,4 @@
-from preprocessing import matrix, books, users, ratings, booksAndRatings
+from modeldata import matrix, books, users, ratings, booksAndRatings
 
 import numpy as np
 import pandas as pd
@@ -100,11 +100,9 @@ def classification(city, state, country, generation, old_book_rating, new_book_r
 
     # Predict the labels for the new data
     predicted_labels = model.predict(new_data)
-
+    print(f"The predicted rating for {label} is {predicted_labels[0]} based on the user's attributes.")
     return predicted_labels
 
 # to implement the program, enter the user attributes: city, state, country, generation, rating to old and new books,
 # and the type of label (0 = author, 1 = publisher), and the targeted label value
-result = classification('black mountain', 'north carolina', 'United States of America', 'genx', 'high', '',
-                        1, 'Dell')
-print(result)
+classification('black mountain', 'north carolina', 'United States of America', 'genx', 'high', '', 1, 'Dell')

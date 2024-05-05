@@ -141,8 +141,8 @@ ratings.to_csv('datasets/BX-Ratings-processed.csv', index=False)
 def groupYears(books):
     print("groupYears")
     # Group year of publication of books into 20-year periods
-    bins = [1919, 1998, 2010]
-    labels = ['1920-1998', '1999-2010']
+    bins = [1919, 1979, 1999, 2010]
+    labels = ['before 1980s', '1980s-1990s', '>=2000']
     books['Publication-Era'] = pd.cut(books['Year-Of-Publication'], bins=bins, labels=labels, right=True)
     return books
 
@@ -173,17 +173,6 @@ booksAndRatings_ = booksAndRatings.groupby(['User-ID', 'Publication-Era'])['Book
 books_ratings_users = pd.merge(booksAndRatings_[['User-ID', 'Book-Rating', 'Publication-Era']], users,
                                on='User-ID', how='inner')
 
-### added by eq
-matrix = books_ratings_users[['User-ID', 'User-City', 'User-State', 'User-Country', 'User-Age']].drop_duplicates()
-
-old_book = books_ratings_users[books_ratings_users['Publication-Era']=='1920-1998'][['User-ID', 'Book-Rating']]
-old_book = old_book.rename(columns={'Book-Rating': 'Old-Book-Rating'})
-new_book = books_ratings_users[books_ratings_users['Publication-Era']=='1999-2010'][['User-ID', 'Book-Rating']]
-new_book = new_book.rename(columns={'Book-Rating': 'New-Book-Rating'})
-
-matrix = pd.merge(matrix, old_book, on='User-ID', how='inner')
-matrix = pd.merge(matrix, new_book, on='User-ID', how='inner')
-### added by eq
 
 allData = pd.merge(users, booksAndRatings, on=['User-ID', 'User-ID'], how='inner')
 # Columns: 'User-ID', 'User-City', 'User-State', 'User-Country', 'User-Age', 'ISB', 'Book-Title', 'Book-Author', 'Year-Of-Publication', 'Book-Publisher', 'Book-Rating',
@@ -199,20 +188,8 @@ allData.to_csv('datasets/combinedData.csv', index=False)
 """
 Discretize the age, publication year and ratings
 """
+
 discretizedData = allData
-
-# Discretise ratings into bins
-ratingBins = [0, 4, 7, 10]
-discretizedData['Book-Rating'] = pd.cut(discretizedData['Book-Rating'], ratingBins, labels=["poor", "okay", "good"])
-discretizedData = discretizedData.rename(columns={"Book-Rating": "Book-Rating-Tier"})
-
-# Create bins by decade for the book's year of publication
-floorMinYear = int(math.floor(discretizedData['Year-Of-Publication'].min() / 10.0)) * 10
-ceilMaxYear = int(math.ceil(discretizedData['Year-Of-Publication'].max() / 10.0)) * 10
-yearBins = [floorMinYear, 2000, ceilMaxYear]
-# Discretize the years of publications into equal-width bins by decade
-discretizedData['Year-Of-Publication'] = pd.cut(discretizedData['Year-Of-Publication'], yearBins, labels=yearBins[:-1])
-discretizedData = discretizedData.rename(columns={"Year-Of-Publication": "Publication-Era"})
 
 # Discretize the users into bins
 # Domain knowledge bins - by generation (see notes.md)
@@ -229,12 +206,26 @@ discreteAgeLabels = list(discreteAges.keys())
 discreteAgeValues = list(discreteAges.values())
 discretizedData['User-Age'] = pd.cut(discretizedData['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1])
 discretizedData = discretizedData.rename(columns={"User-Age": "User-Generation"})
+discretizedData_ = discretizedData.rename(columns={"User-Age": "User-Generation"})
 
-### added by eq
-matrix['User-Age'] = pd.cut(matrix['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1])
-matrix = matrix.rename(columns={"User-Age": "User-Generation"})
-matrix.to_csv('datasets/matrix.csv')
-### added by eq
+# Output the discretized data sheet
+print("allCombinedData.to_csv")
+discretizedData.to_csv('datasets/allCombinedData.csv', index=False)
+all_rating_data = discretizedData_
+
+# Discretise ratings into bins
+ratingBins = [0, 4, 7, 10]
+discretizedData['Book-Rating'] = pd.cut(discretizedData['Book-Rating'], ratingBins, labels=["poor", "okay", "good"])
+discretizedData = discretizedData.rename(columns={"Book-Rating": "Book-Rating-Tier"})
+
+# Create bins by decade for the book's year of publication
+floorMinYear = int(math.floor(discretizedData['Year-Of-Publication'].min() / 10.0)) * 10
+ceilMaxYear = int(math.ceil(discretizedData['Year-Of-Publication'].max() / 10.0)) * 10
+yearBins = [floorMinYear, 2000, ceilMaxYear]
+# Discretize the years of publications into equal-width bins by decade
+discretizedData['Year-Of-Publication'] = pd.cut(discretizedData['Year-Of-Publication'], yearBins, labels=yearBins[:-1])
+discretizedData = discretizedData.rename(columns={"Year-Of-Publication": "Publication-Era"})
+
 
 # print(books_ratings_users.head(20))
 
