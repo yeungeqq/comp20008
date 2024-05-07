@@ -1,5 +1,7 @@
 import pandas as pd
 import requests
+import re
+from fuzzywuzzy import process
 from variables import countries
 
 # read files and store in pandas dataframe
@@ -81,6 +83,32 @@ ratings.to_csv('datasets/BX-Ratings-processed.csv', index=False)
 """
 Data pre-processing: Books
 """
+def fuzzyMatching(books, attribute):
+    '''Perform Fuzzy Wuzzy string matching so that duplicate authors and publishers
+    aren't repeated and can be recorded in one unique form'''
+
+    if attribute == "Book-Publisher":
+        unique_data = books['Book-Publisher'].unique()
+    elif attribute == "Book-Author":
+        unique_data = books['Book-Author'].unique()
+
+    for index, row in books.iterrows():
+        curr_data = row[attribute]
+        outcome = process.extract(curr_data, unique_data)
+        # out of the top 2 high scoring strings, pick the one with shortest length
+        min_index = 0
+        len_str = len(outcome[0][0])
+        # outcome is by default sorted in descending order by their score
+        for i in range(1,3):
+            if len(outcome[i][0]) < len_str:
+                if re.search(outcome[i][0], curr_data):
+                    # only change data if the searched string is a substring of curr_data
+                    len_str = len(outcome[i][0])
+                    min_index = i
+        books.at[index, attribute] = outcome[min_index][0]
+
+    return books
+
 def fetchBookDetails(isbn):
     url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn + "&key=AIzaSyDT0-rFRG-uYlxey21gXGwc8fRMnigMSAU"
     page = requests.get(url)
