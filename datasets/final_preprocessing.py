@@ -11,9 +11,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from variables import countries
 
-TEST_SIZE = 0.2
-RANDOM_STATE = 20008
-
 # read files and store in pandas dataframe
 books = pd.read_csv("BX-Books.csv")
 users = pd.read_csv("BX-Users.csv")
@@ -80,7 +77,7 @@ def preprocessRatings(ratings):
     ratings.dropna(subset=['Book-Rating'], inplace=True)
     # only retain ratings 1 or more.
     ratings = ratings[ratings['Book-Rating'] >= 1]
-    # only retain ratings10 or less.
+    # only retain ratings 10 or less.
     ratings = ratings[ratings['Book-Rating'] <= 10]
 
     # ISBN
@@ -102,15 +99,18 @@ def fuzzyMatching(books, attribute):
         unique_data = books['Book-Author'].unique()
     
     for index, row in books.iterrows():
-        outcome = process.extract(row[attribute], unique_data)
+        curr_data = row[attribute]
+        outcome = process.extract(curr_data, unique_data)
         # out of the top 2 high scoring strings, pick the one with shortest length
         min_index = 0
         len_str = len(outcome[0][0])
         # outcome is by default sorted in descending order by their score
-        for i in range(1,2):
+        for i in range(1,3):
             if len(outcome[i][0]) < len_str:
-                len_str = len(outcome[i][0])
-                min_index = i
+                if re.search(outcome[i][0], curr_data):
+                    # only change data if the searched string is a substring of curr_data
+                    len_str = len(outcome[i][0])
+                    min_index = i
         books.at[index, attribute] = outcome[min_index][0]
 
     return books
@@ -160,108 +160,3 @@ def preprocessBooks(books):
 books = preprocessBooks(books)
 
 books.to_csv('Fuzzy-Publishers.csv', index=False)
-
-"""
-Feature Selection: determine which attributes of users and books affect the 
-book ratings significantly
-"""
-
-# X = ratings
-# X = pd.merge(X, users[['User-ID', 'User-Country', 'User-Age']], on='User-ID', how='inner')
-# X = pd.get_dummies(X, columns=['User-Country'])
-# y = X['Book-Rating']
-# X = X.drop('Book-Rating', axis=1)
-# X = X.drop('ISBN', axis=1)
-
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE)
-
-# model = RandomForestRegressor(n_estimators=100)
-# model.fit(X_train, y_train)
-
-# importances = pd.Series(model.feature_importances_, index=X_train.columns)
-# importances.sort_values(ascending=False).plot(kind='bar')
-# plt.title("Feature Importance")
-# plt.show()
-
-"""
-Create a dataframe containing all attributes
-"""
-booksAndRatings = pd.merge(ratings, books, on=['ISBN'], how='inner')
-booksAndRatings_ = booksAndRatings.groupby(['User-ID', 'Publication-Era'])['Book-Rating'].mean().reset_index()
-books_ratings_users = pd.merge(booksAndRatings_[['User-ID', 'Book-Rating', 'Publication-Era']], users,
-                               on='User-ID', how='inner')
-
-### added by eq
-matrix = books_ratings_users[['User-ID', 'User-City', 'User-State', 'User-Country', 'User-Age']].drop_duplicates()
-
-old_book = books_ratings_users[books_ratings_users['Publication-Era']=='1920-1998'][['User-ID', 'Book-Rating']]
-old_book = old_book.rename(columns={'Book-Rating': 'Old-Book-Rating'})
-new_book = books_ratings_users[books_ratings_users['Publication-Era']=='1999-2010'][['User-ID', 'Book-Rating']]
-new_book = new_book.rename(columns={'Book-Rating': 'New-Book-Rating'})
-
-matrix = pd.merge(matrix, old_book, on='User-ID', how='inner')
-matrix = pd.merge(matrix, new_book, on='User-ID', how='inner')
-### added by eq
-
-allData = pd.merge(users, booksAndRatings, on=['User-ID', 'User-ID'], how='inner')
-# Columns: 'User-ID', 'User-City', 'User-State', 'User-Country', 'User-Age', 'ISB', 'Book-Title', 'Book-Author', 'Year-Of-Publication', 'Book-Publisher', 'Book-Rating',
-# Rows: a rating (given by a single user for a single book)
-# print(allData.tail(10))
-
-# print("allData.to_csv")
-allData.to_csv('datasets/combinedData.csv', index=False)
-
-"""
-Discretize the age, publication year and ratings
-"""
-discretizedData = allData
-
-# Discretise ratings into bins
-ratingBins = [0, 4, 7, 10]
-discretizedData['Book-Rating'] = pd.cut(discretizedData['Book-Rating'], ratingBins, labels=["poor", "okay", "good"])
-discretizedData = discretizedData.rename(columns={"Book-Rating": "Book-Rating-Tier"})
-
-# Create bins by decade for the book's year of publication
-floorMinYear = int(math.floor(discretizedData['Year-Of-Publication'].min() / 10.0)) * 10
-ceilMaxYear = int(math.ceil(discretizedData['Year-Of-Publication'].max() / 10.0)) * 10
-yearBins = [floorMinYear, 2000, ceilMaxYear]
-# Discretize the years of publications into equal-width bins by decade
-discretizedData['Year-Of-Publication'] = pd.cut(discretizedData['Year-Of-Publication'], yearBins, labels=yearBins[:-1])
-discretizedData = discretizedData.rename(columns={"Year-Of-Publication": "Publication-Era"})
-
-# Discretize the users into bins
-# Domain knowledge bins - by generation (see notes.md)
-discreteAges={
-  "teenager": 12,
-  "youth": 16,
-  "genz": 19,
-  "millenial": 28,
-  "genx": 44,
-  "boomer+": 60,
-  "twilight": 103,
-}
-discreteAgeLabels = list(discreteAges.keys())
-discreteAgeValues = list(discreteAges.values())
-discretizedData['User-Age'] = pd.cut(discretizedData['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1])
-discretizedData = discretizedData.rename(columns={"User-Age": "User-Generation"})
-
-### added by eq
-matrix['User-Age'] = pd.cut(matrix['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1])
-matrix = matrix.rename(columns={"User-Age": "User-Generation"})
-matrix.to_csv('datasets/matrix.csv')
-### added by eq
-
-# print(books_ratings_users.head(20))
-
-# Create a 3D scatterplot
-zValueColours = {
-    "poor": [1, 0, 0, 0.5],
-    "okay": [1, 1, 0, 0.5],
-    "good": [0, 1, 0, 0.5],
-}
-
-# draw_3D_scatterplot("Scatterplot 1", 'User Generation', discretizedData['User-Generation'], 'Decade of publication', discretizedData['Publication-Era'], 'Rating', discretizedData['Book-Rating-Tier'], zValueColours)
-
-# Output the discretized data sheet
-print("discretizedData.to_csv")
-discretizedData.to_csv('datasets/discretizedData.csv', index=False)
