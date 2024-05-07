@@ -1,5 +1,4 @@
 import pandas as pd
-import re
 import requests
 from variables import countries
 
