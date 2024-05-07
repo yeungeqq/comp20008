@@ -12,12 +12,23 @@ ratings = pd.read_csv("BX-Ratings.csv")
 """
 Data pre-processing: Users
 """
-def preprocessUserCountries(users):
+def preprocessUsers(users):
+    # Age
+    # Remove all NaN or empty user ages
+    users.dropna(subset=['User-Age'], inplace=True)
+    users['User-Age'] = users['User-Age'].str.strip()
+    # Remove all non-numeric symbols
+    users['User-Age'].replace(to_replace='[^0-9]+', value='', inplace=True, regex=True)
+    # Convert the values to numeric
+    users['User-Age'] = pd.to_numeric(users['User-Age'])
+    # only retain users above 12 (lower end gen-z) and below 103 (upper end boomers+) years of age.
+    users.loc[(users['User-Age'] >= 12) & (users['User-Age'] < 103)]
+
+    ### Country
     # Remove trailing and preceeding whitespace
     users['User-Country'] = users['User-Country'].str.strip()
-
-    # remove the """ and any space characters between the """ and the content
     users['User-Country'].replace(to_replace='["]+', value='', inplace=True, regex=True)
+    # remove the """ and any space characters between the """ and the content
     users['User-Country'] = users['User-Country'].str.strip()
 
     # create a mapping dictionary
@@ -31,35 +42,16 @@ def preprocessUserCountries(users):
             if target_country:
                 final_country_name = target_country["country"]
 
-    # all the provided data is in lowercase
-    for country in countries:
-        country_mapping[country["country"].lower()] = country["country"]
-        country_mapping[country["full_name"].lower()] = country["country"]
-        country_mapping[country["iso_code_2"].lower()] = country["country"]
-        country_mapping[country["iso_code_3"].lower()] = country["country"]
+        country_mapping[country["country"].lower()] = final_country_name
+        country_mapping[country["full_name"].lower()] = final_country_name
+        country_mapping[country["iso_code_2"].lower()] = final_country_name
+        country_mapping[country["iso_code_3"].lower()] = final_country_name
 
     # normalize the 'User-Country' entries - invalid countries will be set to na
     users['User-Country'] = users['User-Country'].str.lower().map(country_mapping)
 
     # optionally remove invalid (na) countries - eliminates 795 rows (48299 to 47504)
     users.dropna(subset=['User-Country'], inplace=True)
-
-    return users
-
-def preprocessUsers(users):
-    # Age
-    # Remove all NaN or empty user ages
-    users.dropna(subset=['User-Age'], inplace=True)
-    users['User-Age'] = users['User-Age'].str.strip()
-    # Remove all non-numeric symbols
-    users['User-Age'].replace(to_replace='[^0-9]+', value='', inplace=True, regex=True)
-    # Convert the values to numeric
-    users['User-Age'] = pd.to_numeric(users['User-Age'])
-    # only retain users above 12 (lower end gen-z) and below 103 (upper end boomers+) years of age.
-    users = users[(users['User-Age'] >= 12) & (users['User-Age'] < 103)]
-
-    ### Country
-    users = preprocessUserCountries(users)
 
     return users
 
