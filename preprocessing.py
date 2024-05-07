@@ -3,6 +3,7 @@ import requests
 import re
 from fuzzywuzzy import process
 from variables import countries
+import credentials
 
 # read files and store in pandas dataframe
 books = pd.read_csv("BX-Books.csv")
@@ -110,7 +111,7 @@ def fuzzyMatching(books, attribute):
     return books
 
 def fetchBookDetails(isbn):
-    url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn + "&key=AIzaSyDT0-rFRG-uYlxey21gXGwc8fRMnigMSAU"
+    url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn + "&key=" + credentials.googleBooksApi
     page = requests.get(url)
     data = page.json()
 

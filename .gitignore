@@ -10,3 +10,5 @@ datasets/*
 
 results/*
 !results/README.md
+
+credentials.py
