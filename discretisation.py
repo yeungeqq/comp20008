@@ -32,6 +32,7 @@ Discretize: Ratings
 """
 ratingBins = [0, 4, 7, 10]
 discretizedData['Book-Rating-Tier'] = pd.cut(discretizedData['Book-Rating'], ratingBins, labels=["poor", "okay", "good"])
+
 # Optionally: can override and rename the age column
 # discretizedData['Book-Rating'] = pd.cut(discretizedData['Book-Rating'], ratingBins, labels=["poor", "okay", "good"])
 # discretizedData = discretizedData.rename(columns={"Book-Rating": "Book-Rating-Tier"})
