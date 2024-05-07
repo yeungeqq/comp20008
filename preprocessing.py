@@ -173,6 +173,6 @@ booksAndRatings = pd.merge(ratings, books, on=['ISBN', 'ISBN'], how='inner')
 allData = pd.merge(users, booksAndRatings, on=['User-ID', 'User-ID'], how='inner')
 
 # Write out a combined CVS
-allData.to_csv('datasets/combinedProcessedData.csv', index=False)
+allData.to_csv('datasets/combinedData.csv', index=False)
 # Please note this is the rawest, processed data.
 # For discretisation, please see discretisation.py
