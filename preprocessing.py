@@ -1,6 +1,7 @@
-import math
 import pandas as pd
-import matplotlib.pyplot as plt
+import re
+import requests
+from fuzzywuzzy import process
 from variables import countries
 
 # read files and store in pandas dataframe
