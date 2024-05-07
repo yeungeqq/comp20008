@@ -1,1 +1,12 @@
 graphs/*
+
+datasets/*
+!datasets/README.md
+!datasets/BX-Books-processed.csv
+!datasets/BX-Users-processed.csv
+!datasets/BX-Ratings-processed.csv
+!datasets/discretizedData.csv
+!datasets/combinedData.csv
+
+results/*
+!results/README.md
