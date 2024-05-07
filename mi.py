@@ -57,3 +57,6 @@ for combination in attributes_combinations:
         highest_mi = mi
         features = list(combination)
 print(f"Features with the highest MI to ratings is {features} and the score is {highest_mi}")
+
+features = pd.DataFrame({'Features': features})
+features.to_csv('datasets/features.csv')

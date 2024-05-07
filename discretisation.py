@@ -1,4 +1,5 @@
 import pandas as pd
+import math
 
 """
 Discretize: Age
@@ -20,7 +21,9 @@ discreteAgeLabels = list(discreteAges.keys())
 discreteAgeValues = list(discreteAges.values())
 
 # Create an aditional column for generation
-discretizedData['User-Generation'] = pd.cut(discretizedData['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1])
+new_column = 'User-Generation'
+insert_location = 4
+discretizedData.insert(insert_location, new_column, pd.cut(discretizedData['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1]))
 
 # Optionally: can override and rename the age column
 # discretizedData['User-Age'] = pd.cut(discretizedData['User-Age'], discreteAgeValues, labels=discreteAgeLabels[:-1])
@@ -46,8 +49,8 @@ floorMinYear = int(math.floor(discretizedData['Year-Of-Publication'].min() / 10.
 ceilMaxYear = int(math.ceil(discretizedData['Year-Of-Publication'].max() / 10.0)) * 10
 
 # Group year of publication of books into 20-year periods
-yearBins = [floorMinYear, 1980, 2000, ceilMaxYear]
-labels = ['before 1980s', '1980s-2000s', '>=2000']
+yearBins = [floorMinYear, 1940, 1960, 1980, 2000, ceilMaxYear]
+labels = ['before 1940s', '1940s-1960s', '1960s-1980s', '1980s-2000s', '>=2000']
 # Discretize the years of publications into equal-width bins by decade
 discretizedData['Publication-Era'] = pd.cut(discretizedData['Year-Of-Publication'], bins=yearBins, labels=labels)
 
