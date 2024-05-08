@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
 import re
+import numpy as np
 from fuzzywuzzy import process
 from variables import countries
 import credentials
@@ -154,11 +155,26 @@ def preprocessBooks(unprocessedbooks):
     # Author
     processedBooks['Book-Author'] = processedBooks['Book-Author'].replace(to_replace='[^A-Za-z\s.]+', value='', regex=True)
     processedBooks['Book-Author'] = processedBooks['Book-Author'].str.title()
+    processedBooks = fuzzyMatching(processedBooks, "Book-Publisher")
+
+    # Output the fuzzy wuzzy results for authors for evaluation
+    uniqueAuthors = processedBooks['Book-Author'].unique()
+    uniqueAuthors = np.sort(uniqueAuthors)
+    file = open("subsets/unique-authors.txt", "w+")
+    file.write(str(np.array2string(uniqueAuthors, threshold = np.inf)))
+    file.close()
 
     # Publisher
     processedBooks['Book-Publisher'] = processedBooks['Book-Publisher'].replace(to_replace='[^A-Za-z\s.&]+', value='', regex=True)
     processedBooks['Book-Publisher'] = processedBooks['Book-Publisher'].str.title()
     processedBooks = fuzzyMatching(processedBooks, "Book-Publisher")
+
+    # Output the fuzzy wuzzy results for publishers for evaluation
+    uniquePublishers = processedBooks['Book-Publisher'].unique()
+    uniquePublishers = np.sort(uniquePublishers)
+    file = open("subsets/unique-publishers.txt", "w+")
+    file.write(str(np.array2string(uniquePublishers, threshold = np.inf)))
+    file.close()
 
     return processedBooks
 
