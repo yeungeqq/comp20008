@@ -76,6 +76,8 @@ def preprocessRatings(ratings):
     # ISBN
     # confirm that all rating ISBNs are valid (have a matching book in the book list)
     ratings = pd.merge(books['ISBN'], ratings, on='ISBN', how='inner')
+    # confirm that all rating users are valid (have a matching user id in the user list)
+    ratings = pd.merge(users['User-ID'], ratings, on='User-ID', how='inner')
 
     return ratings
 
