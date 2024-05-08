@@ -110,77 +110,55 @@ def fuzzyMatching(books, attribute):
 
     return books
 
-def fetchBookDetails(isbn):
+def getPublishedYear(isbn):
     url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn + "&key=" + credentials.googleBooksApi
     page = requests.get(url)
     data = page.json()
 
-    # Initialize a dictionary with keys corresponding to your dataframe columns
-    book_details = {
-        'ISBN': isbn,
-        'Book-Author': None,
-        'Year-Of-Publication': None,
-        'Book-Publisher': None
-    }
-
+    # Need to be able to monitor if Google's API accepts the request
+    # Avoid exhausting quota of 1000 per day — check the file output
     with open("googleApiFetch.txt", "a") as fileFetch:
 
         try:
             if data['items']:
                 book_info = data['items'][0]['volumeInfo']
-                book_details['Book-Author'] = book_info.get('authors', [None])[0]
                 # the publishedDate is not always a year, it occassionally has the month and the month and day
                 # e.g. 1994-01 or 1984-01-04
                 # need to sanitise the date to be only a year inorder to convert it to an int
-                book_details['Year-Of-Publication'] = book_info.get('publishedDate', '').split('-')[0]
-                book_details['Book-Publisher'] = book_info.get('publisher')
-
-            return book_details
+                published_year = book_info.get('publishedDate', '').split('-')[0]
+                return int(published_year)
         except Exception:
             print(f"Failed to fetch book data: {isbn}", file=fileFetch)
-            return {}  # Return an empty dictionary on failure
-
-
+            return None
 
 def preprocessBooks(unprocessedbooks):
     processedBooks = unprocessedbooks.copy()
 
     # Year of Publication
     processedBooks.dropna(subset=['Year-Of-Publication'], inplace=True)
+    processedBooks['Year-Of-Publication'] = processedBooks['Year-Of-Publication'].astype(int)
+
+    # Data enrichment: filling in missing year of publication
+    for index, row in books.iterrows():
+        year = int(row['Year-Of-Publication'])
+        isbn = row['ISBN']
+        if year == 0:
+            missing_year = getPublishedYear(isbn)
+            if missing_year:
+                books.at[index, 'Year-Of-Publication'] = int(missing_year)
+
+    # Filter out books with an invalid year of publication
+    processedBooks = processedBooks.loc[(processedBooks['Year-Of-Publication'] > 0) & (processedBooks['Year-Of-Publication'] <= 2024)]
+
 
     # Author
-    processedBooks['Book-Author'].replace(to_replace='[^A-Za-z\s.]+', value='', inplace=True, regex=True)
+    processedBooks['Book-Author'] = processedBooks['Book-Author'].replace(to_replace='[^A-Za-z\s.]+', value='', regex=True)
     processedBooks['Book-Author'] = processedBooks['Book-Author'].str.title()
 
     # Publisher
     processedBooks['Book-Publisher'] = processedBooks['Book-Publisher'].replace(to_replace='[^A-Za-z\s.&]+', value='', regex=True)
     processedBooks['Book-Publisher'] = processedBooks['Book-Publisher'].str.title()
-
-    # Data enrichment: filling in missing or incorrect data
-    for index, row in processedBooks.iterrows():
-        api_book_details = fetchBookDetails(row['ISBN'])
-
-        fileComparisons = open("googleApiComparison.txt", "a")
-
-        if api_book_details is not None:
-            # Check each column for mismatches and update if necessary
-            if 'Year-Of-Publication' in api_book_details and api_book_details['Year-Of-Publication'] and str(row['Year-Of-Publication']).strip() != str(api_book_details['Year-Of-Publication']).strip():
-                print(f"Updating ISBN {row['ISBN']} column Year-Of-Publication from {row['Year-Of-Publication']} to {api_book_details['Year-Of-Publication']}", file=fileComparisons)
-                processedBooks.at[index, 'Year-Of-Publication'] = api_book_details['Year-Of-Publication']
-
-            if 'Book-Author' in api_book_details and  api_book_details['Book-Author'] and str(row['Book-Author']).strip() != str(api_book_details['Book-Author']).strip():
-                print(f"Updating ISBN {row['ISBN']} column Book-Author from {row['Book-Author']} to {api_book_details['Book-Author']}", file=fileComparisons)
-                processedBooks.at[index, 'Book-Author'] = api_book_details['Book-Author']
-
-            if 'Book-Publisher' in api_book_details and api_book_details['Book-Publisher'] and str(row['Book-Publisher']).strip() != str(api_book_details['Book-Publisher']).strip():
-                print(f"Updating ISBN {row['ISBN']} column Book-Author from {row['Book-Publisher']} to {api_book_details['Book-Publisher']}", file=fileComparisons)
-                processedBooks.at[index, 'Book-Publisher'] = api_book_details['Book-Publisher']
-
-        fileComparisons.close()
-
-    # Filter out books with an invalid year of publication
-    processedBooks['Year-Of-Publication'] = processedBooks['Year-Of-Publication'].astype(int)
-    processedBooks = processedBooks.loc[(processedBooks['Year-Of-Publication'] > 0) & (processedBooks['Year-Of-Publication'] <= 2024)]
+    processedBooks = fuzzyMatching(processedBooks, "Book-Publisher")
 
     return processedBooks
 
