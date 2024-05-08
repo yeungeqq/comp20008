@@ -33,8 +33,8 @@ discretizedData.insert(insert_location, new_column, pd.cut(discretizedData['User
 """
 Discretize: Ratings
 """
-ratingBins = [0, 4, 7, 10]
-discretizedData['Book-Rating-Tier'] = pd.cut(discretizedData['Book-Rating'], ratingBins, labels=["poor", "okay", "good"])
+ratingBins = [0, 6, 10]
+discretizedData['Book-Rating-Tier'] = pd.cut(discretizedData['Book-Rating'], ratingBins, labels=["Not High", "High"])
 
 # Optionally: can override and rename the age column
 # discretizedData['Book-Rating'] = pd.cut(discretizedData['Book-Rating'], ratingBins, labels=["poor", "okay", "good"])
