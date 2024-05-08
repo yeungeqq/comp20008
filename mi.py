@@ -1,4 +1,4 @@
-from itertools import product, combinations
+from itertools import combinations
 from sklearn.feature_selection import mutual_info_classif
 from sklearn.preprocessing import LabelEncoder
 import pandas as pd
@@ -29,17 +29,11 @@ def calculate_mutual_information(X, y):
 
     return mutual_info[0]  # Return the first (and only) element
 
-users = pd.read_csv('datasets/BX-Users-processed.csv')
-books = pd.read_csv('datasets/BX-Books-processed.csv')
-ratings = pd.read_csv('datasets/BX-Ratings-processed.csv')
-matrix = pd.merge(ratings, users, on='User-ID', how='inner')
-matrix = pd.merge(matrix, books, on='ISBN', how='inner')
+matrix = pd.read_csv('datasets/discretizedData.csv')
 matrix = matrix.fillna('NA')
 
-user_attributes = users.columns.to_list()
-user_attributes.remove('User-ID')
-books_attributes = books.columns.to_list()
-books_attributes.remove('ISBN')
+user_attributes = ['User-City', 'User-State', 'User-Country', 'User-Generation', 'User-Age']
+books_attributes = ['Book-Title', 'Book-Author', 'Year-Of-Publication', 'Book-Publisher', 'Publication-Era']
 rating_label = matrix['Book-Rating'].to_list()
 
 attributes_combinations = generate_combinations(user_attributes, books_attributes)
@@ -56,7 +50,6 @@ for combination in attributes_combinations:
     if mi > highest_mi:
         highest_mi = mi
         features = list(combination)
-print(f"Features with the highest MI to ratings is {features} and the score is {highest_mi}")
 
 features = pd.DataFrame({'Features': features})
 features.to_csv('datasets/features.csv')
