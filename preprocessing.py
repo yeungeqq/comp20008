@@ -156,6 +156,10 @@ def preprocessBooks(unprocessedbooks):
 
     # Author
     processedBooks['Book-Author'] = processedBooks['Book-Author'].replace(to_replace='[^A-Za-z\s.]+', value='', regex=True)
+    # Step 1: Ensure there is a space after each period (handles multiple initials)
+    processedBooks['Book-Author'] = processedBooks['Book-Author'].apply(lambda x: re.sub(r'\.(?=[A-Za-z])', '. ', x))
+    # Step 2: Remove excess spaces (if any) after periods
+    processedBooks['Book-Author'] = processedBooks['Book-Author'].apply(lambda x: re.sub(r'\.\s+', '. ', x))
     processedBooks['Book-Author'] = processedBooks['Book-Author'].str.title()
     processedBooks = fuzzyMatching(processedBooks, "Book-Publisher")
 
