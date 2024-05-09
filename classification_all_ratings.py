@@ -71,7 +71,7 @@ def model_all_ratings(method, predict_rating, users=users, books=books, matrix=m
     values = matrix.drop(columns=['Book-Rating'])
 
     # Split data into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(values, target, test_size=0.1, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(values, target, test_size=0.1, random_state=42, shuffle=True)
 
     # Define which columns are categorical
     categorical_cols = X_train.select_dtypes(include=['object']).columns.tolist()
