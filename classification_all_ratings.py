@@ -45,12 +45,15 @@ def visualiseConfusionMatrix(cm):
     plt.xlabel('Predicted labels')
     plt.ylabel('True labels')
     plt.title('Confusion Matrix')
-    plt.show()
-
+    
     if method == DT:
         plt.savefig("results/confusion-matrix-all-dt.png")
     elif method == KNN:
         plt.savefig("results/confusion-matrix-all-knn.png")
+        
+    plt.show()
+
+
 
 def model_all_ratings(method, predict_rating, users=users, books=books, matrix=matrix, features=features):
 

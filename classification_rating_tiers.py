@@ -61,12 +61,13 @@ def visualiseConfusionMatrix(cm):
             ax.text(j + 0.5, i + 0.5, f"{labels[i, j]}\n({cm[i, j]})",
                     ha='center', va='center', color=text_color, fontweight='bold')
 
-    plt.show()
-
     if method == DT:
         plt.savefig("results/confusion-matrix-tiers-dt.png")
     elif method == KNN:
         plt.savefig("results/confusion-matrix-tiers-knn.png")
+
+    plt.show()
+
 
 def model_all_ratings(method, predict_rating, users=users, books=books, matrix=matrix, features=features):
 
