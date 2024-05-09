@@ -1,11 +1,14 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
+from sklearn.metrics import confusion_matrix
 from sklearn.pipeline import Pipeline
 import sys
 
@@ -34,6 +37,16 @@ except:
 
 if method == DT: print('You selected decision tree as the algorithm.')
 elif method == KNN: print('You selected K-nearest neighbour as the algorithm.')
+
+def visualiseConfusionMatrix(cm):
+    # Plotting the confusion matrix
+    plt.figure(1, figsize=(10, 7), clear=True)
+    sns.heatmap(cm, annot=True, fmt='g', cmap='Blues')
+    plt.xlabel('Predicted labels')
+    plt.ylabel('True labels')
+    plt.title('Confusion Matrix')
+    plt.show()
+    plt.savefig("graphs/confusion-matrix-tiers.png")
 
 def model_all_ratings(method, predict_rating, users=users, books=books, matrix=matrix, features=features):
 
@@ -96,6 +109,12 @@ def model_all_ratings(method, predict_rating, users=users, books=books, matrix=m
     report = classification_report(y_test, y_pred)
     print("Classification Report:")
     print(report)
+
+    # Generate the confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+    print("Confusion Matrix:")
+    print(cm)
+    visualiseConfusionMatrix(cm)
 
     if predict_rating == YES:
         # Combine user and book attributes for prediction
