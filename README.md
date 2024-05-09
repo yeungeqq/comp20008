@@ -1,5 +1,17 @@
 1. Data Preprocessing
+Ensure that the BX-Books.csv, BX-Ratings.csv and BX-Users.csv files live in the root project folder.  
+To process the three datasets and create and export the combined dataframe, run:
+```
+python3 preprocessing.py
+```
 
+Once the preprocessing is complete, check that you have the file:
+`datasets/combinedData.csv`
+
+Then you need to discretise user age, year published and rating, run: 
+```
+python3 discretisation.py
+```
 
 
 2. Feature Selections
