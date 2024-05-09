@@ -59,7 +59,6 @@ discretizedData['Publication-Era'] = pd.cut(discretizedData['Year-Of-Publication
 Output discretized data
 """
 # Output the discretized data sheet
-print("discretizedData.to_csv")
 discretizedData.to_csv('datasets/discretizedData.csv', index=False)
 
 
