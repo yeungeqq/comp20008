@@ -39,17 +39,28 @@ rating_label = matrix['Book-Rating'].to_list()
 attributes_combinations = generate_combinations(user_attributes, books_attributes)
 print("Mutual Informtion for all possible books and users attributes combinations:")
 
-highest_mi = 0
-features = None
+highest_mi = []
+features = []
 for combination in attributes_combinations:
     # Convert each value to string and then join them
     X = matrix[list(combination)].astype(str).apply('_'.join, axis=1)
     y = np.array(rating_label)  # Ensure y is a 1-dimensional array
     mi = calculate_mutual_information(X, y)
     print(f"The MI of {list(combination)} is {mi}.")
-    if mi > highest_mi:
-        highest_mi = mi
-        features = list(combination)
+    if len(highest_mi) < 10 or mi > min(highest_mi):
+        if len(highest_mi) >= 10:
+            min_index = np.argmin(highest_mi)
+            del highest_mi[min_index]
+            del features[min_index]
+        highest_mi.append(mi)
+        features.append(list(combination))
+    
+# Print the top 10 MI scores and corresponding feature combinations
+for i, (mi, feat) in enumerate(zip(highest_mi, features), 1):
+    print(f"Top {i}: MI = {mi}, Features = {feat}")
 
-features = pd.DataFrame({'Features': features})
-features.to_csv('datasets/features.csv')
+common_features = set(features[0])
+for comb in features[1:]:
+    common_features = common_features.intersection(comb)
+top_features = pd.DataFrame({'Features': list(common_features)})
+top_features.to_csv('features.csv', index=False)

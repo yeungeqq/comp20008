@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import classification_report
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -12,7 +12,7 @@ import sys
 # Load data
 users = pd.read_csv('datasets/BX-Users-processed.csv')
 books = pd.read_csv('datasets/BX-Books-processed.csv')
-features = pd.read_csv('datasets/features.csv')
+features = pd.read_csv('features.csv')
 features = features['Features'].to_list()
 features.append('Book-Rating')
 matrix = pd.read_csv('datasets/discretizedData.csv')
