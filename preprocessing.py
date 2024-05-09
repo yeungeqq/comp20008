@@ -4,6 +4,7 @@ import re
 import numpy as np
 from fuzzywuzzy import process
 from variables import countries
+from unidecode import unidecode
 import credentials
 
 # read files and store in pandas dataframe
@@ -54,6 +55,20 @@ def preprocessUsers(users):
 
     # optionally remove invalid (na) countries - eliminates 795 rows (48299 to 47504)
     users.dropna(subset=['User-Country'], inplace=True)
+
+    ### Cities
+    users['User-City'] = users['User-City'].astype(str)
+    users['User-City'] = users['User-City'].str.strip()
+    users['User-City'] = users['User-City'].apply(unidecode)
+    users['User-City'] = users['User-City'].replace(to_replace='[^A-Za-z\s.]+', value='', regex=True)
+    users['User-City'] = users['User-City'].str.title()
+
+    ### States
+    users['User-State'] = users['User-State'].astype(str)
+    users['User-State'] = users['User-State'].str.strip()
+    users['User-State'] = users['User-State'].apply(unidecode)
+    users['User-State'] = users['User-State'].replace(to_replace='[^A-Za-z\s.]+', value='', regex=True)
+    users['User-State'] = users['User-State'].str.title()
 
     return users
 
