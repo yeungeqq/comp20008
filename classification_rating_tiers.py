@@ -66,10 +66,15 @@ def visualiseConfusionMatrix(cm):
             text_color = "white" if norm_cm[i, j] > 0.5 else "black"
             ax.text(j + 0.5, i + 0.5, f"{labels[i, j]}\n({cm[i, j]})",
                     ha='center', va='center', color=text_color, fontweight='bold')
-    plt.savefig(f"results/confusion-matrix-tiers-{method}.png")
+
     plt.show()
 
-def model_rating_tiers(method, predict_rating, users=users, books=books, matrix=matrix, features=features):
+    if method == DT:
+        plt.savefig("results/confusion-matrix-tiers-dt.png")
+    elif method == KNN:
+        plt.savefig("results/confusion-matrix-tiers-knn.png")
+
+def model_all_ratings(method, predict_rating, users=users, books=books, matrix=matrix, features=features):
 
     if predict_rating == YES:
         # Prompt user to enter user ID and ISBN
