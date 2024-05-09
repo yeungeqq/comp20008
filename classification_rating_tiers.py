@@ -46,7 +46,7 @@ def model_all_ratings(method, predict_rating, users=users, books=books, matrix=m
         books['ISBN'] = books['ISBN'].astype(str)
 
         # Retrieve user and book attributes
-        user = users[users['User-ID'] == user_id]
+        user = users[users['User-ID'] == int(user_id)]
         book = books[books['ISBN'] == ISBN]
         user_attributes = user.columns.values.tolist()
         book_attributes = book.columns.values.tolist()
