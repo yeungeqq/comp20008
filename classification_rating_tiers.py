@@ -39,19 +39,25 @@ if method == DT: print('You selected decision tree as the algorithm.')
 elif method == KNN: print('You selected K-nearest neighbour as the algorithm.')
 
 def visualiseConfusionMatrix(cm):
-    labels = np.array([["True Negative", "False Positive"], ["False Negative", "True Positive"]])  # Adjust based on your specific confusion matrix
+    labels = np.array([["True Positive", "False Negative"], ["False Positive", "True Negative"]])  # Adjust based on your specific confusion matrix
 
     # Calculate normalization to add text color contrast
     norm_cm = cm / cm.max()
+
+    # change legends
+    legends = np.array([["High", "Not High"], ["Not High", "High"]]) 
 
     # Plotting
     plt.figure(2, figsize=(10, 7), clear=True)
 
     fig, ax = plt.subplots(figsize=(8, 6))
-    sns.heatmap(cm, fmt='d', cmap='Blues', ax=ax)  # fmt='d' for integer formatting
+    sns.heatmap(cm, fmt='d', cmap='Blues', ax=ax, xticklabels=legends[0], yticklabels=legends[0])  # fmt='d' for integer formatting
     ax.set_xlabel('Predicted labels')
     ax.set_ylabel('True labels')
-    ax.set_title('Confusion Matrix with Labels')
+    if method == DT:
+        ax.set_title('Decision Tree Classification Model Confusion Matrix')
+    elif method == KNN:
+        ax.set_title('K-nearest Neighbours Classification Model Confusion Matrix')
 
     # Loop over data dimensions and create text annotations.
     n_rows, n_cols = cm.shape
@@ -60,15 +66,10 @@ def visualiseConfusionMatrix(cm):
             text_color = "white" if norm_cm[i, j] > 0.5 else "black"
             ax.text(j + 0.5, i + 0.5, f"{labels[i, j]}\n({cm[i, j]})",
                     ha='center', va='center', color=text_color, fontweight='bold')
-
+    plt.savefig(f"results/confusion-matrix-tiers-{method}.png")
     plt.show()
 
-    if method == DT:
-        plt.savefig("results/confusion-matrix-tiers-dt.png")
-    elif method == KNN:
-        plt.savefig("results/confusion-matrix-tiers-knn.png")
-
-def model_all_ratings(method, predict_rating, users=users, books=books, matrix=matrix, features=features):
+def model_rating_tiers(method, predict_rating, users=users, books=books, matrix=matrix, features=features):
 
     if predict_rating == YES:
         # Prompt user to enter user ID and ISBN
@@ -146,4 +147,4 @@ def model_all_ratings(method, predict_rating, users=users, books=books, matrix=m
         print(f"The predicted rating for this book is {predicted_label[0]} by the user.")
 
 
-model_all_ratings(method, predict_rating)
+model_rating_tiers(method, predict_rating)

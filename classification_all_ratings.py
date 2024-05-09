@@ -44,13 +44,13 @@ def visualiseConfusionMatrix(cm):
     sns.heatmap(cm, annot=True, fmt='g', cmap='Blues')
     plt.xlabel('Predicted labels')
     plt.ylabel('True labels')
-    plt.title('Confusion Matrix')
+    if method == DT:
+        plt.title("Decision Tree Classification Model Confusion Matrix")
+    elif method == KNN:
+        plt.title("K-nearest Neighbours Classification Model Confusion Matrix")
+    plt.savefig(f"results/confusion-matrix-all-{method}.png")
     plt.show()
 
-    if method == DT:
-        plt.savefig("results/confusion-matrix-all-dt.png")
-    elif method == KNN:
-        plt.savefig("results/confusion-matrix-all-knn.png")
 
 def model_all_ratings(method, predict_rating, users=users, books=books, matrix=matrix, features=features):
 
