@@ -59,6 +59,7 @@ for combination in attributes_combinations:
 for i, (mi, feat) in enumerate(zip(highest_mi, features), 1):
     print(f"Top {i}: MI = {mi}, Features = {feat}")
 
+# find the minimal common features
 common_features = set(features[0])
 for comb in features[1:]:
     common_features = common_features.intersection(comb)
