@@ -60,30 +60,6 @@ def preprocessUsers(users):
 users = preprocessUsers(users)
 users.to_csv('datasets/BX-Users-processed.csv', index=False)
 
-
-"""
-Data pre-processing: Ratings
-"""
-def preprocessRatings(ratings):
-    # Book Rating
-    # Remove all NaN or empty rows
-    ratings.dropna(subset=['Book-Rating'], inplace=True)
-    # only retain ratings 1 or more.
-    ratings = ratings[ratings['Book-Rating'] >= 1]
-    # only retain ratings 10 or less.
-    ratings = ratings[ratings['Book-Rating'] <= 10]
-
-    # ISBN
-    # confirm that all rating ISBNs are valid (have a matching book in the book list)
-    ratings = pd.merge(books['ISBN'], ratings, on='ISBN', how='inner')
-    # confirm that all rating users are valid (have a matching user id in the user list)
-    ratings = pd.merge(users['User-ID'], ratings, on='User-ID', how='inner')
-
-    return ratings
-
-ratings = preprocessRatings(ratings)
-ratings.to_csv('datasets/BX-Ratings-processed.csv', index=False)
-
 """
 Data pre-processing: Books
 """
@@ -187,6 +163,28 @@ def preprocessBooks(unprocessedbooks):
 books = preprocessBooks(books)
 books.to_csv('datasets/BX-Books-processed.csv', index=False)
 
+"""
+Data pre-processing: Ratings
+"""
+def preprocessRatings(ratings):
+    # Book Rating
+    # Remove all NaN or empty rows
+    ratings.dropna(subset=['Book-Rating'], inplace=True)
+    # only retain ratings 1 or more.
+    ratings = ratings[ratings['Book-Rating'] >= 1]
+    # only retain ratings 10 or less.
+    ratings = ratings[ratings['Book-Rating'] <= 10]
+
+    # ISBN
+    # confirm that all rating ISBNs are valid (have a matching book in the book list)
+    ratings = pd.merge(books['ISBN'], ratings, on='ISBN', how='inner')
+    # confirm that all rating users are valid (have a matching user id in the user list)
+    ratings = pd.merge(users['User-ID'], ratings, on='User-ID', how='inner')
+
+    return ratings
+
+ratings = preprocessRatings(ratings)
+ratings.to_csv('datasets/BX-Ratings-processed.csv', index=False)
 
 """
 Create a dataframe containing all attributes
