@@ -39,14 +39,34 @@ if method == DT: print('You selected decision tree as the algorithm.')
 elif method == KNN: print('You selected K-nearest neighbour as the algorithm.')
 
 def visualiseConfusionMatrix(cm):
-    # Plotting the confusion matrix
-    plt.figure(1, figsize=(10, 7), clear=True)
-    sns.heatmap(cm, annot=True, fmt='g', cmap='Blues')
-    plt.xlabel('Predicted labels')
-    plt.ylabel('True labels')
-    plt.title('Confusion Matrix')
+    labels = np.array([["True Negative", "False Positive"], ["False Negative", "True Positive"]])  # Adjust based on your specific confusion matrix
+
+    # Calculate normalization to add text color contrast
+    norm_cm = cm / cm.max()
+
+    # Plotting
+    plt.figure(2, figsize=(10, 7), clear=True)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(cm, fmt='d', cmap='Blues', ax=ax)  # fmt='d' for integer formatting
+    ax.set_xlabel('Predicted labels')
+    ax.set_ylabel('True labels')
+    ax.set_title('Confusion Matrix with Labels')
+
+    # Loop over data dimensions and create text annotations.
+    n_rows, n_cols = cm.shape
+    for i in range(n_rows):
+        for j in range(n_cols):
+            text_color = "white" if norm_cm[i, j] > 0.5 else "black"
+            ax.text(j + 0.5, i + 0.5, f"{labels[i, j]}\n({cm[i, j]})",
+                    ha='center', va='center', color=text_color, fontweight='bold')
+
     plt.show()
-    plt.savefig("graphs/confusion-matrix-tiers.png")
+
+    if method == DT:
+        plt.savefig("results/confusion-matrix-tiers-dt.png")
+    elif method == KNN:
+        plt.savefig("results/confusion-matrix-tiers-knn.png")
 
 def model_all_ratings(method, predict_rating, users=users, books=books, matrix=matrix, features=features):
 

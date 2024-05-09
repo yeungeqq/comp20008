@@ -8,7 +8,4 @@ datasets/*
 !datasets/discretizedData.csv
 !datasets/combinedData.csv
 
-results/*
-!results/README.md
-
 credentials.py
