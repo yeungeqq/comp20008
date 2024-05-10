@@ -1,5 +1,26 @@
 1. Data Preprocessing
 Ensure that the BX-Books.csv, BX-Ratings.csv and BX-Users.csv files live in the root project folder.  
+
+If not already installed you will need to install these two python packages: fuzzywuzzy and unicode.
+
+To [install fuzzywuzzy](https://pypi.org/project/fuzzywuzzy/):
+```
+pip install fuzzywuzzy[speedup]
+```
+the [speedup] version of the library specifically installs python-Levenshtein package. 
+Otherwise you can try:
+```
+pip install python-Levenshtein
+pip install fuzzywuzzy
+```
+
+Then you'll need to [install unidecode](https://pypi.org/project/Unidecode/)
+```
+pip install Unidecode
+```
+
+One these packages are installed, you may run the preprocessing. 
+
 To process the three datasets and create and export the combined dataframe, run:
 ```
 python3 preprocessing.py
