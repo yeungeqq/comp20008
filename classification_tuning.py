@@ -9,6 +9,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import sys
 
+YES = 'y'
+
 # Load data
 users = pd.read_csv('datasets/BX-Users-processed.csv')
 books = pd.read_csv('datasets/BX-Books-processed.csv')
@@ -28,6 +30,22 @@ if method not in [DT, KNN]:
     sys.exit(1)
 
 def model_all_ratings(method, predict_rating, users, books, matrix, features):
+    if predict_rating == YES:
+        # Prompt user to enter user ID and ISBN
+        user_id = input("Enter User ID: ")
+        ISBN = input("Enter ISBN: ")
+
+        # Ensure ISBN is treated as string
+        books['ISBN'] = books['ISBN'].astype(str)
+
+        # Retrieve user and book attributes
+        user = users[users['User-ID'] == int(user_id)]
+        book = books[books['ISBN'] == ISBN]
+        user_attributes = user.columns.values.tolist()
+        book_attributes = book.columns.values.tolist()
+        final_user_attb = [attb for attb in user_attributes if attb in features]
+        final_book_attb = [attb for attb in book_attributes if attb in features]
+    
     # Split features and target
     target = matrix['Book-Rating-Tier']
     values = matrix.drop(columns=['Book-Rating-Tier'])
@@ -67,14 +85,14 @@ def model_all_ratings(method, predict_rating, users, books, matrix, features):
     print("Classification Report:")
     print(classification_report(y_test, y_pred))
 
-    if predict_rating == 'yes':
-        user_id = input("Enter User ID: ")
-        ISBN = input("Enter ISBN: ")
-        user_data = users[users['User-ID'] == int(user_id)]
-        book_data = books[books['ISBN'] == ISBN]
-        input_data = pd.concat([user_data, book_data], axis=1).reindex(columns=features[:-1])  # Exclude target variable
-        prediction = grid_search.predict(input_data)
-        print(f"The predicted rating tier for this book by the user is {prediction[0]}.")
+    if predict_rating == YES:
+        # Combine user and book attributes for prediction
+        new_data = user[final_user_attb].values.tolist()[0] + book[final_book_attb].values.tolist()[0]
+        new_data_dict = {feat: [val] for feat, val in zip(features, new_data)}
+        new_data_df = pd.DataFrame(new_data_dict)
+        predicted_label = model.predict(new_data_df)
+        # Predict the labels for the new data
+        print(f"The predicted rating for this book is {predicted_label[0]} by the user.")
 
 if __name__ == "__main__":
     model_all_ratings(method, predict_rating, users, books, matrix, features)
